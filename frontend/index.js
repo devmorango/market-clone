@@ -1,14 +1,18 @@
 const calcTime = (timestamp) => {
   const curTime = new Date().getTime() - 9 * 60 * 60 * 1000;
-  const time = new Date(curTime - timestamp);
-  const hour = time.getHours();
-  const minute = time.getMinutes();
-  const second = time.getSeconds();
+  const timeDiff = curTime - timestamp;
 
-  if (hour > 0) return `${hour}시간 전`;
-  else if (minute > 0) return `${minute}분 전`;
-  else if (second > 0) return `${second}초 전`;
-  else return "방금 전";
+  const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  if (daysAgo > 0) return `${daysAgo}일 전`;
+
+  const hoursAgo = Math.floor(timeDiff / (1000 * 60 * 60));
+  if (hoursAgo > 0) return `${hoursAgo}시간 전`;
+
+  const minutesAgo = Math.floor(timeDiff / (1000 * 60));
+  if (minutesAgo > 0) return `${minutesAgo}분 전`;
+
+  const secondsAgo = Math.floor(timeDiff / 1000);
+  return `${secondsAgo}초 전`;
 };
 
 const renderData = (data) => {
@@ -53,7 +57,20 @@ const renderData = (data) => {
 };
 
 const fetchList = async () => {
-  const res = await fetch("/items");
+  const accessToken = window.localStorage.getItem("token");
+  const res = await fetch("/items", {
+    headers: {
+      // "header" 대신 "headers"로 수정
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (res.status === 401) {
+    alert("로그인이 필요합니다");
+    window.location.pathname = "/login.html";
+    return;
+  }
+
   const data = await res.json();
   renderData(data);
 };
